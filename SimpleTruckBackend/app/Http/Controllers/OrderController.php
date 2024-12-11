@@ -37,6 +37,11 @@ class OrderController extends Controller
         $admin = User::where('is_admin', true)->first();
         $admin->notify(new NewOrderNotification($order));
 
+        // $order = Order::create($request->all());
+        // $admin = User::where('is_admin', true)->first();
+        // $admin->notify(new NewOrderNotification());
+        // return response()->json(['message' => 'Order placed successfully.']);
+
         return response()->json($order, 201);
     }
 

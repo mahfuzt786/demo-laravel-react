@@ -19,7 +19,8 @@ class NewOrderNotification extends Notification
 
     public function via($notifiable)
     {
-        return ['mail'];
+        // return ['mail'];
+        return ['database'];
     }
 
     public function toMail($notifiable)
@@ -35,10 +36,18 @@ class NewOrderNotification extends Notification
      *
      * @return array<string, mixed>
      */
-    public function toArray(object $notifiable): array
+    // public function toArray(object $notifiable): array
+    // {
+    //     return [
+    //         //
+    //     ];
+    // }
+
+    public function toArray($notifiable)
     {
         return [
-            //
+            'message' => 'A new order has been placed.',
         ];
     }
 }
+
