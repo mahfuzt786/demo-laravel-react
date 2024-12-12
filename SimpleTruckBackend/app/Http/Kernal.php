@@ -25,6 +25,7 @@ class Kernel extends HttpKernel
         'throttle' => \App\Http\Middleware\ThrottleRequests::class,
         'auth:sanctum' => \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+        'isAdmin' => \App\Http\Middleware\IsAdmin::class,
     ];
 
     /**

@@ -4,13 +4,20 @@ import {
   Text,
   TextInput,
   Button,
-  Alert,
   StyleSheet,
+  Platform,
+  ActivityIndicator, TouchableOpacity 
 } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import ErrorMessage from '../components/ErrorMessage';
 import { useNavigation } from '@react-navigation/native';
+import Input from '../components/Input';
+import { createTruckRequest } from '../services/api';
+
+
+import { Picker } from '@react-native-picker/picker';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 const TruckRequestScreen = () => {
   const navigation = useNavigation();
@@ -22,81 +29,104 @@ const TruckRequestScreen = () => {
   const [weightUnit, setWeightUnit] = useState('kg');
   const [pickupTime, setPickupTime] = useState(null);
   const [deliveryTime, setDeliveryTime] = useState(null);
-  const [showPickupPicker, setShowPickupPicker] = useState(false);
-  const [showDeliveryPicker, setShowDeliveryPicker] = useState(false);
+  const [error, setError] = useState(null); // Added for error handling
 
-  // Check if user is logged in
   useEffect(() => {
     const checkLogin = async () => {
-      const token = await AsyncStorage.getItem('token');
+      const token = await AsyncStorage.getItem('userToken');
       if (!token) {
-        Alert.alert('Unauthorized', 'Please log in to access this page.');
+        setError('Unauthorized. Please log in to access this page.');
         navigation.replace('Login');
       }
     };
-
     checkLogin();
   }, []);
 
   const validateInput = () => {
     if (!location || !size || !weight || !pickupTime || !deliveryTime) {
-      Alert.alert('Error', 'All fields are required.');
+      setError('All fields are required.');
       return false;
     }
 
     if (isNaN(parseFloat(size)) || isNaN(parseFloat(weight))) {
-      Alert.alert('Error', 'Size and weight must be numbers.');
+      setError('Size and weight must be numbers.');
       return false;
     }
 
     if (new Date(pickupTime) >= new Date(deliveryTime)) {
-      Alert.alert(
-        'Error',
-        'Delivery time must be later than the pickup time.'
-      );
+      setError('Delivery time must be later than pickup time.');
       return false;
     }
 
     return true;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!validateInput()) return;
 
     const requestData = {
-      location,
+      location: location,
       size: `${size} ${sizeUnit}`,
       weight: `${weight} ${weightUnit}`,
-      pickupTime,
-      deliveryTime,
+      pickup_time: new Date(pickupTime).toISOString(),
+      delivery_time: new Date(deliveryTime).toISOString(),
     };
 
-    Alert.alert('Success', 'Truck request submitted!', JSON.stringify(requestData));
-    // Submit to API or handle further
+    try {
+      console.log(requestData);
+
+      const response = await createTruckRequest(requestData);
+      if (response.status === 201) {
+        alert('Truck request created successfully!');
+        setError(null); // Clear any errors
+        navigation.replace('Dashboard');
+
+      } else {
+        setError('Failed to create truck request. Please try again.');
+      }
+    } catch (err) {
+      setError('An error occurred while submitting the request. '+ err.response.data.message);
+      console.error(err); // Log error for debugging
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem('userToken');
+      await AsyncStorage.removeItem('user_id');
+      navigation.replace('Login');
+    } catch (err) {
+      console.error('Failed to logout', err);
+    }
+  };
+
+  const handleDashboard = () => {
+    navigation.navigate('Dashboard');
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Truck Request</Text>
-      <TextInput
+      <ErrorMessage error={error} />
+      <Input
         placeholder="Location"
         value={location}
-        onChangeText={setLocation}
-        style={styles.input}
+        onChangeText={(text) => setLocation(text)}
+        iconName="map"
       />
 
       <View style={styles.row}>
-        <TextInput
+        <Input
           placeholder="Size"
           value={size}
           onChangeText={(text) => setSize(text.replace(/[^0-9.]/g, ''))}
           keyboardType="numeric"
-          style={[styles.input, styles.rowInput]}
+          iconName='straighten'
         />
         <Picker
           selectedValue={sizeUnit}
           onValueChange={(value) => setSizeUnit(value)}
-          style={styles.picker}
+          style={[styles.picker, styles.dropdown]}
         >
           <Picker.Item label="m³" value="m³" />
           <Picker.Item label="ft³" value="ft³" />
@@ -104,66 +134,64 @@ const TruckRequestScreen = () => {
       </View>
 
       <View style={styles.row}>
-        <TextInput
+        <Input
           placeholder="Weight"
           value={weight}
           onChangeText={(text) => setWeight(text.replace(/[^0-9.]/g, ''))}
           keyboardType="numeric"
-          style={[styles.input, styles.rowInput]}
+          iconName="scale"
         />
         <Picker
           selectedValue={weightUnit}
           onValueChange={(value) => setWeightUnit(value)}
-          style={styles.picker}
+          style={[styles.picker, styles.dropdown]}
         >
           <Picker.Item label="kg" value="kg" />
           <Picker.Item label="lb" value="lb" />
         </Picker>
       </View>
 
-      <Button
-        title="Select Pickup Time"
-        onPress={() => setShowPickupPicker(true)}
-      />
-      {showPickupPicker && (
-        <DateTimePicker
-          value={pickupTime ? new Date(pickupTime) : new Date()}
-          mode="datetime"
-          display="default"
-          onChange={(event, date) => {
-            setShowPickupPicker(false);
-            if (date) setPickupTime(date.toISOString());
-          }}
+      <View style={styles.row}>
+        <Text style={styles.label}>Pickup Time:</Text>
+        <DatePicker
+          style={styles.dateTimePick}
+          selected={pickupTime}
+          onChange={(date) => setPickupTime(date)}
+          showTimeSelect
+          dateFormat="Pp"
+          popperPlacement="top-end"
+          portalId="pickup-portal"
         />
-      )}
-      {pickupTime && (
-        <Text style={styles.dateText}>
-          Pickup Time: {new Date(pickupTime).toLocaleString()}
-        </Text>
-      )}
+      </View>
 
-      <Button
-        title="Select Delivery Time"
-        onPress={() => setShowDeliveryPicker(true)}
-      />
-      {showDeliveryPicker && (
-        <DateTimePicker
-          value={deliveryTime ? new Date(deliveryTime) : new Date()}
-          mode="datetime"
-          display="default"
-          onChange={(event, date) => {
-            setShowDeliveryPicker(false);
-            if (date) setDeliveryTime(date.toISOString());
-          }}
+      <View style={styles.row}>
+        <Text style={styles.label}>Delivery Time:</Text>
+        <DatePicker
+          style={styles.dateTimePick}
+          selected={deliveryTime}
+          onChange={(date) => setDeliveryTime(date)}
+          showTimeSelect
+          dateFormat="Pp"
+          popperPlacement="top-end"
+          portalId="delivery-portal"
         />
-      )}
-      {deliveryTime && (
-        <Text style={styles.dateText}>
-          Delivery Time: {new Date(deliveryTime).toLocaleString()}
-        </Text>
-      )}
+      </View>
 
       <Button title="Submit Request" onPress={handleSubmit} />
+
+      <View style={styles.tabMenu}>
+        <TouchableOpacity style={styles.tabButton} onPress={handleDashboard}>
+          <Text style={styles.tabButtonText}>Dashboard</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity style={styles.tabButton}>
+          <Text style={styles.tabButtonText}>Truck Request</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.tabButton} onPress={handleLogout}>
+          <Text style={styles.tabButtonText}>Logout</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -192,7 +220,35 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
   },
-  dateText: { marginVertical: 10, fontSize: 16 },
+  label: { fontSize: 16, marginRight: 10 },
+  dateTimePick: {
+    zIndex: 9999, // Ensure the picker displays over other elements
+    position: 'absolute', // Ensure it overlaps other elements
+  },
+  loader: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  tabMenu: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 10,
+    backgroundColor: '#f9f9f9',
+    borderRadius: 10,
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    marginTop: 15,
+  },
+  tabButton: {
+    padding: 10,
+    backgroundColor: '#4CAF50',
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  tabButtonText: {
+    fontSize: 16,
+    color: '#fff',
+  },
 });
 
 export default TruckRequestScreen;

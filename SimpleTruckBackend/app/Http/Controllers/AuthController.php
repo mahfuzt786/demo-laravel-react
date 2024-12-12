@@ -22,6 +22,7 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'is_admin' => $request->user_role ? $request->user_role : false,
         ]);
 
         $token = $user->createToken('API Token')->plainTextToken;
@@ -43,7 +44,7 @@ class AuthController extends Controller
         $user = Auth::user();
         $token = $user->createToken('API Token')->plainTextToken;
 
-        return response()->json(['token' => $token], 200);
+        return response()->json(['token' => $token, 'user_id' => Auth::id()], 200);
     }
 
     public function logout(Request $request)

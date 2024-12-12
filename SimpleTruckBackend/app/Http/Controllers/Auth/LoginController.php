@@ -47,7 +47,8 @@ class LoginController extends Controller
                 return redirect()->route('admin.dashboard');
             }
 
-            return redirect()->route('user.dashboard');
+            // return redirect()->route('user.dashboard');
+            return redirect()->route('admin.login')->withErrors('Access denied for non-admin users.');
         }
 
         return back()->withErrors(['email' => 'Invalid credentials.']);

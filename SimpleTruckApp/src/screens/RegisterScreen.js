@@ -5,6 +5,12 @@ import InputWithToggle from '../components/InputWithToggle';
 import Button from '../components/Button';
 import ErrorMessage from '../components/ErrorMessage';
 import { registerUser } from '../services/api';
+import axios from 'axios';
+
+const API = axios.create({
+  baseURL: 'http://localhost:8000/api', // Update with your backend URL
+  timeout: 5000,
+});
 
 const RegisterScreen = ({ navigation }) => {
   const [userData, setUserData] = useState({
@@ -38,11 +44,20 @@ const RegisterScreen = ({ navigation }) => {
 
     try {
       const response = await registerUser({ name, email, password });
+      console.log(response);
       Alert.alert('Success', 'Registration successful!');
       navigation.navigate('Login');
-    } catch (err) {
-      setError('Failed to register. Please try again.');
+    } catch (error) {
+      if (error.response) {
+        // Log the error response from the server
+        console.error('Registration error:', error.response.data);
+        setError(error.response.data.message || 'Registration failed');
+      } else {
+        setError('Registration failed :', error.message);
+        // throw new Error('Registration failed');
+      }
     }
+    
   };
 
   return (

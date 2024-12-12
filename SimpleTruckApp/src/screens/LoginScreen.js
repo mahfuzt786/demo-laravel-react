@@ -10,7 +10,7 @@ import Input from '../components/Input';
 import InputWithToggle from '../components/InputWithToggle';
 import Button from '../components/Button';
 import ErrorMessage from '../components/ErrorMessage';
-import { loginUser } from '../services/api';
+import { loginUser  } from '../services/api';
 
 const LoginScreen = ({ navigation }) => {
   const [credentials, setCredentials] = useState({ email: '', password: '' });
@@ -34,11 +34,13 @@ const LoginScreen = ({ navigation }) => {
     }
 
     try {
-      const response = await loginUser(credentials);
-      const { token } = response.data;
+      const response = await loginUser (credentials);
+      const token = response.data.token;
+      const user_id = response.data.user_id;
 
       // Save token to AsyncStorage
       await AsyncStorage.setItem('userToken', token);
+      await AsyncStorage.setItem('user_id', user_id);
 
       Alert.alert('Success', 'Login successful!');
       navigation.replace('Dashboard');
@@ -65,9 +67,7 @@ const LoginScreen = ({ navigation }) => {
         iconName="lock"
       />
       <ErrorMessage error={error} />
-      <Button title="Login" onPress={handleLogin} 
-        iconName="check"
-      />
+      <Button title="Login" onPress={handleLogin} iconName="check" />
       <Text
         onPress={() => navigation.navigate('Register')}
         style={styles.link}

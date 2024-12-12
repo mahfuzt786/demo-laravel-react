@@ -64,7 +64,7 @@ const InputWithToggle = ({ placeholder, value, onChangeText, iconName }) => {
       style={styles.inputContainer}
     >
       <TouchableOpacity style={styles.iconContainer}>
-        <MaterialIcons name={iconName} size={24} color="#4C0000" /> {/* Prepend icon */}
+        <MaterialIcons name={iconName} size={24} color="#4C0000" />
       </TouchableOpacity> 
       
       <TextInput

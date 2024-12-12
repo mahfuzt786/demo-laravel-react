@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Notifications\NewOrderNotification;
@@ -37,9 +38,6 @@ class OrderController extends Controller
         $admin = User::where('is_admin', true)->first();
         $admin->notify(new NewOrderNotification($order));
 
-        // $order = Order::create($request->all());
-        // $admin = User::where('is_admin', true)->first();
-        // $admin->notify(new NewOrderNotification());
         // return response()->json(['message' => 'Order placed successfully.']);
 
         return response()->json($order, 201);

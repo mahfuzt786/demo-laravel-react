@@ -5,6 +5,7 @@ namespace App\Notifications;
 use App\Models\Order;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
+use Illuminate\Notifications\Messages\MailMessage;
 
 class NewOrderNotification extends Notification
 {
@@ -19,8 +20,8 @@ class NewOrderNotification extends Notification
 
     public function via($notifiable)
     {
-        // return ['mail'];
-        return ['database'];
+        // Adjust as needed: mail, database, etc.
+        return ['mail', 'database'];
     }
 
     public function toMail($notifiable)
@@ -36,17 +37,17 @@ class NewOrderNotification extends Notification
      *
      * @return array<string, mixed>
      */
-    // public function toArray(object $notifiable): array
-    // {
-    //     return [
-    //         //
-    //     ];
-    // }
-
+    
     public function toArray($notifiable)
     {
         return [
             'message' => 'A new order has been placed.',
+            'order_id' => $this->order->id,
+            'size' => $this->order->size,
+            'weight' => $this->order->weight,
+            'location' => $this->order->location,
+            'pickup_time' => $this->order->pickup_time,
+            'delivery_time' => $this->order->delivery_time,
         ];
     }
 }
