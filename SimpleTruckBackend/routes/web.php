@@ -20,6 +20,10 @@ Route::get('/login', function () {
     return redirect('/admin/login');
 })->name('login');
 
+Route::get('/admin', function () {
+    return redirect('/admin/login');
+})->name('login');
+
 // Admin Routes Group
 Route::prefix('admin')->group(function () {
     // Admin Login
@@ -31,13 +35,14 @@ Route::prefix('admin')->group(function () {
     Route::post('/register', [AdminController::class, 'register'])->name('admin.register.submit');
 
     // Authenticated Admin Routes
-    Route::middleware(['auth:sanctum', 'isAdmin'])->group(function () {
+    Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
-        Route::get('/orders', [OrderController::class, 'listOrders'])->name('admin.orders');
+        Route::get('/orders', [OrderController::class, 'listOrders'])->name('admin.orders.index');
         Route::get('/orders/{id}', [OrderController::class, 'viewOrder'])->name('admin.orders.view');
         Route::post('/orders/{id}/status', [OrderController::class, 'updateOrderStatus'])->name('admin.orders.update');
-        Route::get('/users', [AdminController::class, 'users'])->name('admin.users');
+        Route::get('/users', [AdminController::class, 'users'])->name('admin.users.index');
         Route::post('/logout', [AdminController::class, 'logout'])->name('admin.logout');
+        Route::post('/send-email', [AdminController::class, 'sendEmail'])->name('admin.send-email');
     });
 });
 

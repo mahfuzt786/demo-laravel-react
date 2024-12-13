@@ -7,7 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-
+use Illuminate\Support\Facades\Mail;
 
 class AdminController extends Controller
 {
@@ -87,6 +87,27 @@ class AdminController extends Controller
     public function users()
     {
         $users = User::paginate(10);
-        return view('admin.users', compact('users'));
+        return view('admin.users.index', compact('users'));
+    }
+
+    public function sendEmail(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'content' => 'required|string'
+        ]);
+
+        $email = $request->input('email');
+        $content = $request->input('content');
+
+        try {
+            Mail::raw($content, function ($message) use ($email) {
+                $message->to($email)->subject('Message from Admin');
+            });
+
+            return response()->json(['message' => 'Email sent successfully.']);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Failed to send email.'], 500);
+        }
     }
 }
