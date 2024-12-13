@@ -37,9 +37,10 @@ Route::prefix('admin')->group(function () {
     // Authenticated Admin Routes
     Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
-        Route::get('/orders', [OrderController::class, 'listOrders'])->name('admin.orders.index');
-        Route::get('/orders/{id}', [OrderController::class, 'viewOrder'])->name('admin.orders.view');
-        Route::post('/orders/{id}/status', [OrderController::class, 'updateOrderStatus'])->name('admin.orders.update');
+        
+        Route::get('/orders', [AdminController::class, 'listOrders'])->name('admin.orders.index');
+        Route::post('/orders/{id}/status', [AdminController::class, 'updateOrderStatus'])->name('admin.orders.updateStatus');
+        
         Route::get('/users', [AdminController::class, 'users'])->name('admin.users.index');
         Route::post('/logout', [AdminController::class, 'logout'])->name('admin.logout');
         Route::post('/send-email', [AdminController::class, 'sendEmail'])->name('admin.send-email');

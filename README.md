@@ -72,6 +72,19 @@ export const baseURL = 'http://localhost:8000/api';
    DB_USERNAME=root
    DB_PASSWORD=
    ```
+
+   Also Update .env for email sending tasks
+   ```
+   MAIL_MAILER=smtp
+   MAIL_HOST=smtp.example.com      # Replace with your SMTP server host (e.g., smtp.gmail.com)
+   MAIL_PORT=587                   # Typically 587 for TLS, or 465 for SSL
+   MAIL_USERNAME=your_email@example.com  # Your email address
+   MAIL_PASSWORD=your_password     # Your email account password or app-specific password
+   MAIL_ENCRYPTION=tls             # Use 'tls' or 'ssl' depending on the SMTP server
+   MAIL_FROM_ADDRESS=your_email@example.com # Sender email address
+   MAIL_FROM_NAME="Admin Panel"    # Sender name
+
+   ```
 5. Generate the application key:
    ```bash
    php artisan key:generate

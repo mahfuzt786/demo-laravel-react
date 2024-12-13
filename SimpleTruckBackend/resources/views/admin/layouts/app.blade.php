@@ -18,7 +18,13 @@
                     <a href="{{ route('admin.dashboard') }}" class="text-white">Dashboard</a>
                     <a href="{{ route('admin.users.index') }}" class="text-white">Users</a>
                     <a href="{{ route('admin.orders.index') }}" class="text-white">Orders</a>
-                    <a href="{{ route('admin.logout') }}" class="text-danger">Logout</a>
+                    <!-- <a href="{{ route('admin.logout') }}" class="text-danger">Logout</a> -->
+                    <a> 
+                    <form action="{{ route('admin.logout') }}" method="POST" style="display: inline;">
+                        @csrf
+                        <button type="submit" class="btn btn-danger">Logout</button>
+                    </form>
+                    </a>
                 </nav>
             </div>
         </header>

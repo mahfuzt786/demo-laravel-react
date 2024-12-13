@@ -67,8 +67,8 @@ const DashboardScreen = () => {
             <Text>Location: {item.location}</Text>
             <Text>Size: {item.size}</Text>
             <Text>Weight: {item.weight}</Text>
-            <Text>Pickup Time: {item.pickupTime}</Text>
-            <Text>Delivery Time: {item.deliveryTime}</Text>
+            <Text>Pickup Time: {item.pickup_time}</Text>
+            <Text>Delivery Time: {item.delivery_time}</Text>
             <Text>Status: {item.status}</Text>
           </View>
         )}

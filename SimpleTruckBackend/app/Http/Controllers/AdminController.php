@@ -63,10 +63,18 @@ class AdminController extends Controller
     }
 
     // View Orders
-    public function orders()
+    public function listOrders()
     {
         $orders = Order::with('user')->paginate(10);
-        return view('admin.orders', compact('orders'));
+        return view('admin.orders.index', compact('orders'));
+    }
+
+    public function viewOrder(Request $request, $id)
+    {
+        // $orders = Order::with('user')->paginate(10);
+        $order = Order::findOrFail($id);
+
+        return view('admin.orders.index', compact('orders'));
     }
 
     // Update Order Status
@@ -74,13 +82,27 @@ class AdminController extends Controller
     {
         $request->validate([
             'status' => 'required|in:pending,approved,rejected,completed',
+            'email_content' => 'required|string',
         ]);
 
         $order = Order::findOrFail($id);
         $order->status = $request->status;
         $order->save();
 
-        return redirect()->route('admin.orders')->with('success', 'Order status updated successfully.');
+        // Sending email notification
+        $userEmail = $order->user->email;
+        $userName = $order->user->name;
+        $emailContent = $request->email_content;
+
+        try {
+            Mail::raw($emailContent, function ($message) use ($userEmail) {
+                $message->to($userEmail)->subject('Order Status Update');
+            });
+        } catch (\Exception $e) {
+            return redirect()->route('admin.orders.index')->with('error', 'Order updated but email could not be sent. Error: ' . $e->getMessage());
+        }
+
+        return redirect()->route('admin.orders.index')->with('success', 'Order status updated and email notification sent successfully.');
     }
 
     // View Users
@@ -110,4 +132,20 @@ class AdminController extends Controller
             return response()->json(['message' => 'Failed to send email.'], 500);
         }
     }
+
+    public function logout(Request $request)
+    {
+        // Log out the admin user
+        Auth::guard('web')->logout();
+
+        // Invalidate the session
+        $request->session()->invalidate();
+
+        // Regenerate the session token to prevent session fixation
+        $request->session()->regenerateToken();
+
+        // Redirect to the login page with a success message
+        return redirect()->route('admin.login')->with('success', 'You have been logged out successfully.');
+    }
+
 }

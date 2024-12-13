@@ -112,9 +112,6 @@ The following web routes are defined in `web.php`:
 ### Sanctum Authentication
 Middleware: `auth:sanctum` ensures API requests are authenticated with Laravel Sanctum.
 
-### Admin Authorization
-Middleware: `isAdmin` ensures only admins can access certain routes.
-
 ---
 
 ## Directory Structure
