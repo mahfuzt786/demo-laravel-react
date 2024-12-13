@@ -22,7 +22,7 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'is_admin' => $request->user_role ? $request->user_role : false,
+            'is_admin' => false,
         ]);
 
         $token = $user->createToken('API Token')->plainTextToken;

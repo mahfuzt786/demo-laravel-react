@@ -6,14 +6,38 @@ use App\Models\Order;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 
 class AdminController extends Controller
 {
+    public function showRegisterForm()
+    {
+        return view('admin.register');
+    }
+
+    public function register(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        // Save the admin user 
+        User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'is_admin' => true,
+        ]);
+
+        return redirect()->route('admin.login')->with('success', 'Registration successful. Please login.');
+    }
+    
     public function showLoginForm()
     {
-        // return view('admin.login');
-        return view('auth.login');
+        return view('admin.login');
     }
 
     public function login(Request $request)
@@ -24,10 +48,10 @@ class AdminController extends Controller
                 return redirect()->route('admin.dashboard');
             } else {
                 Auth::logout();
-                return redirect()->route('auth.login')->withErrors('Access denied for non-admin users.');
+                return redirect()->route('admin.login')->withErrors('Access denied for non-admin users.');
             }
         }
-        return redirect()->route('auth.login')->withErrors('Invalid credentials.');
+        return redirect()->route('admin.login')->withErrors('Invalid credentials.');
     }
 
     // Admin Dashboard

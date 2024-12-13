@@ -17,4 +17,12 @@ class RedirectIfAuthenticated
     {
         return $next($request);
     }
+
+    protected function redirectTo($request)
+    {
+        if ($request->is('admin/*')) {
+            return route('admin.dashboard');
+        }
+        return route('login');
+    }
 }
